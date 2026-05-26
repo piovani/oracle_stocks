@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS stocks (
+    id         BIGSERIAL PRIMARY KEY,
+    symbol     VARCHAR(10)    NOT NULL UNIQUE,
+    name       VARCHAR(255)   NOT NULL,
+    price      NUMERIC(18, 4) NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ    NOT NULL DEFAULT NOW()
+);
