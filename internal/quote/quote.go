@@ -7,30 +7,30 @@ import (
 )
 
 type Quote struct {
-	ID            uint64     `gorm:"primaryKey"`
-	Date          time.Time  `gorm:"type:date;not null;uniqueIndex:uq_quotes_date_ticker_bdi,priority:1;index:idx_quotes_ticker_date,priority:2,sort:desc"`
-	Ticker        string     `gorm:"type:varchar(12);not null;uniqueIndex:uq_quotes_date_ticker_bdi,priority:2;index:idx_quotes_ticker_date,priority:1"`
-	BDICode       string     `gorm:"type:varchar(2);not null;uniqueIndex:uq_quotes_date_ticker_bdi,priority:3"`
-	MarketType    string     `gorm:"type:varchar(3);not null"`
-	ShortName     string     `gorm:"type:varchar(12)"`
-	Specification string     `gorm:"type:varchar(10)"`
-	Currency      string     `gorm:"type:varchar(4)"`
-	OpenPrice     float64    `gorm:"type:numeric(18,4)"`
-	HighPrice     float64    `gorm:"type:numeric(18,4)"`
-	LowPrice      float64    `gorm:"type:numeric(18,4)"`
-	AveragePrice  float64    `gorm:"type:numeric(18,4)"`
-	ClosePrice    float64    `gorm:"type:numeric(18,4)"`
-	BestBid       float64    `gorm:"type:numeric(18,4)"`
-	BestAsk       float64    `gorm:"type:numeric(18,4)"`
-	Trades        int64      `gorm:"not null;default:0"`
-	Quantity      int64      `gorm:"not null;default:0"`
-	Volume        float64    `gorm:"type:numeric(20,2)"`
-	StrikePrice   float64    `gorm:"type:numeric(18,4)"`
-	ExpiryDate    *time.Time `gorm:"type:date"`
-	QuoteFactor   int64      `gorm:"not null;default:1"`
-	ISIN          string     `gorm:"type:varchar(12);index:idx_quotes_isin"`
-	DistNumber    string     `gorm:"type:varchar(3)"`
-	CreatedAt     time.Time
+	ID            uint64     `gorm:"column:id;primaryKey"`
+	Date          time.Time  `gorm:"column:date"`
+	Ticker        string     `gorm:"column:ticker"`
+	BDICode       string     `gorm:"column:bdi_code"`
+	MarketType    string     `gorm:"column:market_type"`
+	ShortName     *string    `gorm:"column:short_name"`
+	Specification *string    `gorm:"column:specification"`
+	Currency      *string    `gorm:"column:currency"`
+	OpenPrice     *float64   `gorm:"column:open_price"`
+	HighPrice     *float64   `gorm:"column:high_price"`
+	LowPrice      *float64   `gorm:"column:low_price"`
+	AveragePrice  *float64   `gorm:"column:average_price"`
+	ClosePrice    *float64   `gorm:"column:close_price"`
+	BestBid       *float64   `gorm:"column:best_bid"`
+	BestAsk       *float64   `gorm:"column:best_ask"`
+	Trades        int64      `gorm:"column:trades"`
+	Quantity      int64      `gorm:"column:quantity"`
+	Volume        *float64   `gorm:"column:volume"`
+	StrikePrice   *float64   `gorm:"column:strike_price"`
+	ExpiryDate    *time.Time `gorm:"column:expiry_date"`
+	QuoteFactor   int64      `gorm:"column:quote_factor"`
+	ISIN          *string    `gorm:"column:isin"`
+	DistNumber    *string    `gorm:"column:dist_number"`
+	CreatedAt     time.Time  `gorm:"column:created_at"`
 }
 
 func (Quote) TableName() string { return "quotes" }
@@ -41,23 +41,32 @@ func FromCotahist(r cotahist.Record) Quote {
 		Ticker:        r.Ticker,
 		BDICode:       r.BDICode,
 		MarketType:    r.MarketType,
-		ShortName:     r.ShortName,
-		Specification: r.Specification,
-		Currency:      r.Currency,
-		OpenPrice:     r.OpenPrice,
-		HighPrice:     r.HighPrice,
-		LowPrice:      r.LowPrice,
-		AveragePrice:  r.AveragePrice,
-		ClosePrice:    r.ClosePrice,
-		BestBid:       r.BestBid,
-		BestAsk:       r.BestAsk,
+		ShortName:     nilIfZero(r.ShortName),
+		Specification: nilIfZero(r.Specification),
+		Currency:      nilIfZero(r.Currency),
+		OpenPrice:     nilIfZero(r.OpenPrice),
+		HighPrice:     nilIfZero(r.HighPrice),
+		LowPrice:      nilIfZero(r.LowPrice),
+		AveragePrice:  nilIfZero(r.AveragePrice),
+		ClosePrice:    nilIfZero(r.ClosePrice),
+		BestBid:       nilIfZero(r.BestBid),
+		BestAsk:       nilIfZero(r.BestAsk),
 		Trades:        r.Trades,
 		Quantity:      r.Quantity,
-		Volume:        r.Volume,
-		StrikePrice:   r.StrikePrice,
+		Volume:        nilIfZero(r.Volume),
+		StrikePrice:   nilIfZero(r.StrikePrice),
 		ExpiryDate:    r.ExpiryDate,
 		QuoteFactor:   r.QuoteFactor,
-		ISIN:          r.ISIN,
-		DistNumber:    r.DistNumber,
+		ISIN:          nilIfZero(r.ISIN),
+		DistNumber:    nilIfZero(r.DistNumber),
 	}
+}
+
+// nilIfZero returns nil for a zero value so empty COTAHIST fields persist as NULL.
+func nilIfZero[T comparable](v T) *T {
+	var zero T
+	if v == zero {
+		return nil
+	}
+	return &v
 }

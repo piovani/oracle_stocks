@@ -1,4 +1,4 @@
-.PHONY: run build test lint docker-up docker-down tidy migrate-up
+.PHONY: run build test lint docker-up docker-down tidy migrate-up backfill
 
 run:
 	go run ./cmd/api
@@ -8,6 +8,9 @@ build:
 
 migrate-up:
 	go run ./cmd/migrate up
+
+backfill:
+	go run ./cmd/backfill -from=$(FROM)$(if $(TO), -to=$(TO))$(if $(BDI), -bdi=$(BDI))
 
 test:
 	go test ./...
